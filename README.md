@@ -15,18 +15,18 @@ This project was created as part of a **Software Testing Midterm Assignment**, f
 
 ## Test Cases
 
-| ID | Test Case | Description | Expected Result |
-|----|-----------|-------------|-----------------|
-| **TC_AUTH_VM_001** | Validate Empty Username | Ensure error is returned when username is empty | `"Username cannot be empty."` |
-| **TC_AUTH_VM_002** | Validate Short Password | Ensure error is returned for passwords shorter than 6 chars | `"Password must be at least 6 characters long."` |
-| **TC_AUTH_VM_003** | Successful Login | Verify login works for valid credentials | `RequestStatus.idle`, user is not null |
-| **TC_AUTH_VM_004** | Login with Invalid Credentials | Verify login fails with invalid credentials | `RequestStatus.error`, exception with message `"Invalid username or password."` |
-| **TC_AUTH_VM_005** | Logout Functionality | Ensure session is reset on logout | Protected resource should be inaccessible after logout |
-| **TC_AUTH_VM_006** | Username Length Boundary Values | Test usernames at min (3) and max (20) characters | Valid: no error message; Invalid: `"Invalid username length."` |
-| **TC_AUTH_VM_007** | Password Length Boundary Values | Test passwords at min (6) and max (20) characters | Valid: no error message; Invalid: `"Password too long."` |
-| **TC_AUTH_VM_008** | Login with Special Characters in Username | Ensure special characters are rejected in username | `"Invalid characters in username."` |
-| **TC_AUTH_VM_009** | Login with SQL Injection Attempt | Ensure SQL injection strings are rejected securely | `RequestStatus.error`, exception with message `"Invalid username or password."` |
-| **TC_AUTH_VM_010** | Login with Empty Fields | Ensure login fails when both fields are empty | `"Username cannot be empty."`, `"Password cannot be empty."` |
+| Test Case ID   | Description                               | Preconditions                                                     | Test Steps                                                                                 | Expected Result                                                       |
+| -------------- | ----------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| TC_AUTH_VM_001 | Validate Empty Username                   | AuthViewModel is initialized with FakeAuthService                 | Call `validateUsername('')`                                                                | Returns `"Username cannot be empty."`                                 |
+| TC_AUTH_VM_002 | Validate Short Password                   | AuthViewModel is initialized with FakeAuthService                 | Call `validatePassword('123')`                                                             | Returns `"Password must be at least 6 characters long."`              |
+| TC_AUTH_VM_003 | Successful Login                          | AuthViewModel is initialized with FakeAuthService                 | Call `initiateLogin('testuser', 'password123')`                                            | `user.username == 'testuser'`, `status == idle`                       |
+| TC_AUTH_VM_004 | Login with Invalid Credentials            | AuthViewModel is initialized with FakeAuthService                 | Call `initiateLogin('invaliduser', 'wrongpassword')`                                       | Throws error `"Invalid username or password."`, `status == error`     |
+| TC_AUTH_VM_005 | Logout Functionality                      | AuthViewModel is initialized and logged in with valid credentials | Call `initiateLogout()`                                                                    | `user == null`, `status == idle`                                      |
+| TC_AUTH_VM_006 | Username Length Boundary Values           | AuthViewModel is initialized                                      | Call `validateUsername('abc')`, `validateUsername('ab')`, `validateUsername('a'*21)`       | Returns `null` for valid, `"Invalid username length."` for short/long |
+| TC_AUTH_VM_007 | Password Length Boundary Values           | AuthViewModel is initialized                                      | Call `validatePassword('123456')`, `validatePassword('12345')`, `validatePassword('1'*21)` | Returns `null` for valid, error messages for short/long               |
+| TC_AUTH_VM_008 | Login with Special Characters in Username | AuthViewModel is initialized                                      | Call `validateUsername('user@name!')`                                                      | Returns `"Invalid characters in username."`                           |
+| TC_AUTH_VM_009 | Login with SQL Injection Attempt          | AuthViewModel is initialized                                      | Call `initiateLogin("' OR 1=1 --", "any")`                                                 | Throws error `"Invalid username or password."`, `status == error`     |
+| TC_AUTH_VM_010 | Login with Empty Fields                   | AuthViewModel is initialized                                      | Call `validateUsername('')`, `validatePassword('')`                                        | Returns `"Username cannot be empty."`, `"Password cannot be empty."`  |
 
 ---
 
@@ -36,3 +36,4 @@ To run the unit tests, use the following command:
 
 ```bash
 flutter test test/auth_view_model_test.dart
+```

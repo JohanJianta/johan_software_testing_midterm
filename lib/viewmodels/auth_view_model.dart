@@ -42,6 +42,7 @@ class AuthViewModel extends ChangeNotifier {
     try {
       notifyStatus(RequestStatus.loading);
       await _authService.logout();
+      user = null;
       notifyStatus(RequestStatus.idle);
     } catch (e) {
       notifyStatus(RequestStatus.error);

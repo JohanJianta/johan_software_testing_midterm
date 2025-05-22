@@ -41,12 +41,14 @@ void main() {
     });
 
     test('TC_AUTH_VM_004 - Login with Invalid Credentials', () async {
-      try {
-        await viewModel.initiateLogin('invaliduser', 'wrongpassword');
-      } catch (e) {
-        expect(viewModel.status, RequestStatus.error);
-        expect(e.toString(), contains('Invalid username or password.'));
-      }
+      expectLater(
+        () async => await viewModel.initiateLogin('invaliduser', 'wrongpassword'),
+        throwsA(predicate((e) {
+          expect(viewModel.status, RequestStatus.error);
+          expect(e.toString(), contains('Invalid username or password.'));
+          return true;
+        })),
+      );
     });
 
     test('TC_AUTH_VM_005 - Logout Functionality', () async {
@@ -58,6 +60,7 @@ void main() {
       // User is not set to null, but we can simulate session invalidation
       // In real apps, we check the token/session cleanup
       // So we just check that logout doesn't throw
+      expect(viewModel.user?.username, null);
       expect(viewModel.status, RequestStatus.idle);
     });
 
@@ -87,12 +90,14 @@ void main() {
     });
 
     test('TC_AUTH_VM_009 - Login with SQL Injection Attempt', () async {
-      try {
-        await viewModel.initiateLogin("' OR 1=1 --", "any");
-      } catch (e) {
-        expect(viewModel.status, RequestStatus.error);
-        expect(e.toString(), contains('Invalid username or password.'));
-      }
+      expectLater(
+        () async => await viewModel.initiateLogin("' OR 1=1 --", "any"),
+        throwsA(predicate((e) {
+          expect(viewModel.status, RequestStatus.error);
+          expect(e.toString(), contains('Invalid username or password.'));
+          return true;
+        })),
+      );
     });
 
     test('TC_AUTH_VM_010 - Login with Empty Fields', () {
