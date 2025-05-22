@@ -8,22 +8,12 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final customWidgetBuilder = CustomWidgetBuilder();
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
 
   late AuthViewModel authViewModel;
-
-  void showSnackBar(BuildContext context, String message, Color? snackBarColor) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: snackBarColor,
-        ),
-      );
-    });
-  }
 
   Future<void> _validateAndSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -32,25 +22,24 @@ class _LoginPageState extends State<LoginPage> {
 
       String? usernameError = authViewModel.validateUsername(username);
       if (usernameError != null) {
-        return showSnackBar(context, usernameError, Colors.red);
+        return customWidgetBuilder.showSnackBar(context, usernameError, Colors.red);
       }
 
       String? passwordError = authViewModel.validatePassword(password);
       if (passwordError != null) {
-        return showSnackBar(context, passwordError, Colors.red);
+        return customWidgetBuilder.showSnackBar(context, passwordError, Colors.red);
       }
 
       try {
-        String message = await authViewModel.login(username, password);
+        await authViewModel.initiateLogin(username, password);
         if (mounted) {
-          showSnackBar(context, message, null);
           Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const HomePage()),
             (route) => false,
           );
         }
       } catch (e) {
-        if (mounted) showSnackBar(context, e.toString(), Colors.red);
+        if (mounted) customWidgetBuilder.showSnackBar(context, e.toString(), Colors.red);
       }
     }
   }
@@ -120,46 +109,19 @@ class _LoginPageState extends State<LoginPage> {
             cursorColor: const Color(0xFF082367),
             controller: _passwordController,
             decoration: _inputDecoration('Password'),
-            keyboardType: TextInputType.visiblePassword,
+            keyboardType: TextInputType.text,
+            obscureText: true,
             validator: (value) =>
                 value == null || value.isEmpty ? 'Please insert your password' : null,
           ),
           const SizedBox(height: 32),
-          _buildButton(
+          customWidgetBuilder.buildButton(
             text: 'Login',
-            backgroundColor: const Color(0xFF133569),
+            backgroundColor: const Color(0xFF082367),
             textColor: Colors.white,
             onPressed: _validateAndSubmit,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildButton({
-    required String text,
-    required Color backgroundColor,
-    required Color textColor,
-    Color? borderColor,
-    required VoidCallback onPressed,
-  }) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 60),
-        backgroundColor: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-          side: borderColor != null ? BorderSide(color: borderColor, width: 1.5) : BorderSide.none,
-        ),
-      ),
-      onPressed: onPressed,
-      child: Text(
-        text,
-        style: TextStyle(
-          color: textColor,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
       ),
     );
   }
@@ -186,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
         return Container(
           color: Colors.black.withOpacity(0.5),
           child: const Center(
-            child: CircularProgressIndicator(color: Color(0xFF729762)),
+            child: CircularProgressIndicator(color: Color(0xFF082367)),
           ),
         );
       }

@@ -2,8 +2,11 @@ import 'package:johan_software_testing_midterm/models/models.dart';
 import 'package:flutter/material.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final AuthService _authService = AuthService();
+  final AuthService _authService;
   RequestStatus status = RequestStatus.idle;
+  User? user;
+
+  AuthViewModel({AuthService? authService}) : _authService = authService ?? AuthService();
 
   void notifyStatus(RequestStatus newStatus) {
     status = newStatus;
@@ -24,23 +27,26 @@ class AuthViewModel extends ChangeNotifier {
     return null;
   }
 
-  Future<String> login(String username, String password) async {
+  Future<void> initiateLogin(String username, String password) async {
     try {
       notifyStatus(RequestStatus.loading);
-      notifyStatus(RequestStatus.loading);
-      await _authService.login(username, password);
+      user = await _authService.login(username, password);
       notifyStatus(RequestStatus.idle);
-      return "Login successful";
     } catch (e) {
       notifyStatus(RequestStatus.error);
       rethrow;
     }
   }
 
-  Future<void> logout() async {
-    notifyStatus(RequestStatus.loading);
-    await _authService.logout();
-    notifyStatus(RequestStatus.idle);
+  Future<void> initiateLogout() async {
+    try {
+      notifyStatus(RequestStatus.loading);
+      await _authService.logout();
+      notifyStatus(RequestStatus.idle);
+    } catch (e) {
+      notifyStatus(RequestStatus.error);
+      rethrow;
+    }
   }
 }
 
